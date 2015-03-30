@@ -1,0 +1,7 @@
+#Weird backup file stuff
+*.cpp~
+*.h~
+*.gitignore~
+
+#Codeblocks files
+*.cbp
