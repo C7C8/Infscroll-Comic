@@ -5,3 +5,7 @@
 
 #Codeblocks files
 *.cbp
+
+#Codeblocks directories
+bin/
+obj/
