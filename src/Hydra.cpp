@@ -46,6 +46,8 @@ namespace Hydra
 		srand((int)time(0));
 		setWTitle("Hydra Engine " + getVNumber());
 		systemLog->log("Successfully started the Hydra Engine!");
+		
+		Sprite::renderer = renderer;
 		return true;
 	}
 	void HydraEngine::shutdown()

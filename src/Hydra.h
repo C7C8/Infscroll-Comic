@@ -15,6 +15,7 @@
 #include "Logger.h"
 #include "Timer.h"
 #include "hmath.h"
+#include "Sprite.h"
 
 using std::string;
 using std::stringstream;
