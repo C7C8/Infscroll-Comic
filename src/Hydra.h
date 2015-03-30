@@ -11,7 +11,7 @@
 #include <string>
 #include <sstream>
 
-#include "../version.h"
+#include "version.h"
 #include "Logger.h"
 #include "Timer.h"
 #include "hmath.h"

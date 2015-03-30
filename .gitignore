@@ -5,7 +5,9 @@
 
 #Codeblocks files
 *.cbp
+*.depend
 
 #Codeblocks directories
 bin/
 obj/
+img/
