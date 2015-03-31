@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 
+#include "lib/pugixml.hpp"
 #include "version.h"
 #include "Logger.h"
 #include "Timer.h"

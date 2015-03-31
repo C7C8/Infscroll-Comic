@@ -6,8 +6,12 @@
 #Codeblocks files
 *.cbp
 *.depend
+*.layout
 
 #Codeblocks directories
 bin/
 obj/
 img/
+
+#Misc files
+sysLog.txt
