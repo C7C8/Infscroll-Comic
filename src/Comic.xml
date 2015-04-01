@@ -1,0 +1,28 @@
+<Comics>
+	<panel name="panel00000">
+		<filename str="00000.png"></filename>
+		<position x="0" y="0"></position>
+		<vels velX="5" velY="5"></vels>
+		<root enabled="true"></root>
+		<render enabled="true"></render>
+		<dirs>
+			<dir name="up" nextComic="null"></dir>
+			<dir name="down" nextComic="null"></dir>
+			<dir name="left" nextComic="null"></dir>
+			<dir name="right" nextComic="panel00001"</dir>
+		</dirs>
+	</panel>
+	<panel name="panel00001">
+		<filename str="00001.png"></filename>
+		<position x="365" y="0"></position>
+		<vels velX="5" velY="5"></vels>
+		<root enabled="false"></root>
+		<render enabled="true"></render>
+		<dirs>
+			<dir name="up" nextComic="null"></dir>
+			<dir name="down" nextComic="null"></dir>
+			<dir name="left" nextComic="panel00000"></dir>
+			<dir name="right" nextComic="null"</dir>
+		</dirs>
+	</panel>
+</Comics>
