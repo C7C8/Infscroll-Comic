@@ -6,10 +6,10 @@
 		<root enabled="true"></root>
 		<render enabled="true"></render>
 		<dirs>
-			<dir name="up" nextComic="null"></dir>
-			<dir name="down" nextComic="null"></dir>
-			<dir name="left" nextComic="null"></dir>
-			<dir name="right" nextComic="panel00001"</dir>
+			<up nextComic="null"></up>
+			<down nextComic="null"></down>
+			<left nextComic="null"></left>
+			<right nextComic="panel00001"</right>
 		</dirs>
 	</panel>
 	<panel name="panel00001">
@@ -19,10 +19,10 @@
 		<root enabled="false"></root>
 		<render enabled="true"></render>
 		<dirs>
-			<up nextComic="null"></dir>
-			<down nextComic="null"></dir>
-			<left nextComic="panel00000"></dir>
-			<right nextComic="null"</dir>
+			<up nextComic="null"></up>
+			<down nextComic="null"></down>
+			<left nextComic="panel00000"></left>
+			<right nextComic="null"</riht>
 		</dirs>
 	</panel>
 </Comics>
