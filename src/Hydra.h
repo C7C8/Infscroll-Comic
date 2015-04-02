@@ -40,6 +40,7 @@ namespace Hydra
 		string getWTitle() const;
 		string getVNumber() const;                                      //!< Returns a string containing the version number information
 		SDL_Renderer* getRenderer() const;
+		SDL_Window* getWindow() const;
 	private:
 	    //Core engine members
 	    Logger* systemLog;                                              //!< Logger used for internal engine purposes

@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <zlib.h>
 #include <iostream>
 #include <string>
 using namespace std;
@@ -29,7 +30,7 @@ namespace Hydra
 		void setClipH(int newH);
 		void setClipW(int newW);
 		void setClip(SDL_Rect newCLip);
-	
+
 		int getClipX();
 		int getClipY();
 		int getClipW();

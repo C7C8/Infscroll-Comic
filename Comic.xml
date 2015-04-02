@@ -1,10 +1,10 @@
 <Comics>
 	<panel name="panel00000">
-		<filename str="img/00000.png"></filename>
+		<filename str="00000.png"></filename>
 		<position x="0" y="0"></position>
 		<vels velX="5" velY="5"></vels>
 		<root enabled="true"></root>
-		<render enabled="true"></render>
+		<blank enabled="false"></blank>
 		<dirs>
 			<up nextComic="null"></up>
 			<down nextComic="null"></down>
@@ -13,11 +13,11 @@
 		</dirs>
 	</panel>
 	<panel name="panel00001">
-		<filename str="img/00001.png"></filename>
+		<filename str="00002.png"></filename>
 		<position x="395" y="0"></position>
 		<vels velX="5" velY="5"></vels>
 		<root enabled="false"></root>
-		<render enabled="true"></render>
+		<blank enabled="false"></blank>
 		<dirs>
 			<up nextComic="null"></up>
 			<down nextComic="null"></down>

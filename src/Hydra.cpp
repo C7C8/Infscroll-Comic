@@ -25,7 +25,7 @@ namespace Hydra
 	    systemLog->log("Initializing Hydra Engine " + getVNumber() + " (prepare for a wild ride!)");
 		SDL_Init(SDL_INIT_VIDEO); systemLog->log("Successfully initialized SDL");
 		//TTF_Init();
-		//IMG_Init(IMG_INIT_PNG);
+		IMG_Init((int)IMG_INIT_PNG);
 
 		window = SDL_CreateWindow(wTitle.c_str(),  SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		wXSize, wYSize, SDL_WINDOW_SHOWN);
@@ -41,12 +41,12 @@ namespace Hydra
             systemLog->log("Error: Failed to create renderer!", error);
             return false;
         }
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);	//Black
+		SDL_SetRenderDrawColor(renderer, 100, 100, 100, 0);
 
 		srand((int)time(0));
 		setWTitle("Hydra Engine " + getVNumber());
 		systemLog->log("Successfully started the Hydra Engine!");
-		
+
 		Sprite::renderer = renderer;
 		return true;
 	}
@@ -99,5 +99,9 @@ namespace Hydra
 	SDL_Renderer* HydraEngine::getRenderer() const
 	{
 		return renderer;
+	}
+	SDL_Window* HydraEngine::getWindow() const
+	{
+	    return window;
 	}
 };
