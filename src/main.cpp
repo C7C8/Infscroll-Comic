@@ -34,6 +34,20 @@ int main(int argc, char* argv[])
     double scale = 1.0;
     ComicPanel* currentComic;
 
+    //Load all comics
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file("Comic.xml");
+    cout << "Loaded file Comic.xml with result: " << result.description() << endl;
+    cout << "Loading comics!" << endl;
+
+    for (pugi::xml_node comic = doc.child("Comics").child("panel"); comic; comic = comic.next_sibling())
+    {
+        ComicPanel* newPanel = loadFromXML(comic);
+        cout << "Loaded comic " << newPanel->getName() << endl;
+        panels.push_back(newPanel);
+    }
+
+
     //Shutdown sequence
     for (auto iter = panels.begin(); iter != panels.end(); iter++)
     {
