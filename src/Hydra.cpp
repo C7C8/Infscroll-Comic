@@ -25,7 +25,7 @@ namespace Hydra
 	    systemLog->log("Initializing Hydra Engine " + getVNumber() + " (prepare for a wild ride!)");
 		SDL_Init(SDL_INIT_VIDEO); systemLog->log("Successfully initialized SDL");
 		//TTF_Init();
-		IMG_Init((int)IMG_INIT_PNG);
+		IMG_Init(IMG_INIT_PNG);
 
 		window = SDL_CreateWindow(wTitle.c_str(),  SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		wXSize, wYSize, SDL_WINDOW_SHOWN);

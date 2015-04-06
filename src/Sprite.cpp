@@ -35,8 +35,6 @@ namespace Hydra
         if (texture == NULL)
             cout << "ERROR: " << SDL_GetError() << endl;
 
-        cout << "Successfully loaded " << path << ". BLENDING: " << blending << endl;
-
         SDL_QueryTexture(texture, NULL, NULL, &w, &h);
         scale.w = w;
         scale.h = h;

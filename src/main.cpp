@@ -53,17 +53,24 @@ int main(int argc, char* argv[])
         panels.push_back(newPanel);
     }
 
-    cout << "Displaying images..." << endl;
+    SDL_RenderClear(engine->getRenderer());
 
-    //Dumb test
-    while (true)
+    //Render panels
+    for (auto iter = panels.begin(); iter != panels.end(); iter++)
     {
-        for (auto iter = panels.begin(); iter != panels.end(); iter++)
+        Sprite* image = (*iter)->image;
+        image->render((*iter)->posX, (*iter)->posY);
+    }
+    SDL_RenderPresent(engine->getRenderer());
+
+    bool quit = false;
+    while (!quit)
+    {
+        SDL_Event e;
+        while (SDL_PollEvent(&e) != 0)
         {
-            Sprite* image = (*iter)->image;
-            ComicPanel* panel = *iter;
-            image->render(panel->posX, panel->posY);
-            SDL_UpdateWindowSurface(engine->getWindow());
+            if (e.type == SDL_QUIT)
+                quit = true;
         }
     }
 
