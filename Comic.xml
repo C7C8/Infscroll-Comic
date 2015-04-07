@@ -14,7 +14,7 @@
 	</panel>
 	<panel name="panel00001">
 		<filename str="img/00002.png"></filename>
-		<position x="553" y="0"></position>
+		<position x="653" y="0"></position>
 		<vel value="5"></vel>		
 		<root enabled="false"></root>
 		<blank enabled="false"></blank>
@@ -22,6 +22,32 @@
 			<up nextComic="null"></up>
 			<down nextComic="null"></down>
 			<left nextComic="panel00000"></left>
+			<right nextComic="panel00002"></right>
+		</dirs>
+	</panel>
+	<panel name="panel00002">
+		<filename str="img/00003.png"></filename>
+		<position x="1206" y="0"></position>
+		<vel value="5"></vel>		
+		<root enabled="false"></root>
+		<blank enabled="false"></blank>
+		<dirs>
+			<up nextComic="null"></up>
+			<down nextComic="null"></down>
+			<left nextComic="panel00001"></left>
+			<right nextComic="panel00003"></right>
+		</dirs>
+	</panel>
+	<panel name="panel00003">
+		<filename str="img/00004.png"></filename>
+		<position x="1759" y="0"></position>
+		<vel value="5"></vel>		
+		<root enabled="false"></root>
+		<blank enabled="false"></blank>
+		<dirs>
+			<up nextComic="null"></up>
+			<down nextComic="null"></down>
+			<left nextComic="panel00002"></left>
 			<right nextComic="null"></right>
 		</dirs>
 	</panel>

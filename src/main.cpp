@@ -13,6 +13,8 @@ class ComicPanel
 public:
     int posX;
     int posY;
+    int height;
+    int width;
     float vel; //Speed when traveling TO this panel!    bool root;
     bool blank; //If true, don't render this panel - it's just an empty frame.
     bool root; //Is this comic a root?
@@ -23,6 +25,7 @@ public:
 
 ComicPanel* loadFromXML(pugi::xml_node configNode);
 ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName);
+inline double getScaling(ComicPanel* panel, HydraEngine* engine);
 
 Log* sysLog = Logger::getInstance()->getLog("sysLog");
 
@@ -35,8 +38,8 @@ int main(int argc, char* argv[])
     bool quit = false;
 
     int currentX = 0, currentY = 0;
+    double scale = 1.0f;
     bool transitioning = false;
-    double scale = 1.0;
     ComicPanel* currentPanel;
 
     char cCurrentPath[FILENAME_MAX];
@@ -69,6 +72,8 @@ int main(int argc, char* argv[])
                 quit = true;
         }
 
+        scale = getScaling(currentPanel, engine);
+
         //Transitioning stuff
         if (!transitioning)
         {
@@ -88,32 +93,31 @@ int main(int argc, char* argv[])
             {
                 currentPanel = nextPanel;
                 transitioning = true;
-                cout << "\nSwitching panels to panel " << currentPanel->name << endl;
+                cout << "Switching panels to panel " << currentPanel->name;
             }
         }
-
 
         //Velocities in directions - uses a Vector2D for calculations (because TRIGONOMETRY!)
         if (transitioning)
         {
             Vector2D dir;
-            dir.rotate(atan2f(currentPanel->posY - currentY, currentPanel->posX - currentX));
+            dir.rotate(atan2f(scale * (double)(currentPanel->posY - currentY), scale * (double)(currentPanel->posX - currentX)));
             dir.setMag(currentPanel->vel);
 
             currentX += dir.getX();
             currentY += dir.getY();
 
-            //Distanc checking - basically a cheap way of doing Pythagorean theorem, but with vectors so the math doesn't have to be written out
-            dir.setX(abs(currentPanel->posX - currentX));
-            dir.setY(abs(currentPanel->posY - currentY));
+            //Distance checking - basically a cheap way of doing Pythagorean theorem, but with vectors so the math doesn't have to be written out
+            dir.setX(abs((int)(scale * ((double)currentPanel->posX - currentX))));
+            dir.setY(abs((int)(scale * ((double)currentPanel->posY - currentY))));
+           // SDL_Delay(180);
 
-            if (dir.getMag() <= currentPanel->vel) //Disabled temporarily
+            if (dir.getMag() <= currentPanel->vel)
             {
-                cout << "Panel within range; finishing transition. ";
                 transitioning = false;
-                currentX = currentPanel->posX;
-                currentY = currentPanel->posY;
-                cout << "Viewer at " << currentX << ", " << currentY << endl;
+                currentX = (double)currentPanel->posX;// * scale;
+                currentY = (double)currentPanel->posY;// * scale;
+                cout << ". Viewer at " << currentX << ", " << currentY << ". Advised scaling: " << getScaling(currentPanel, engine) << endl;
             }
         }
 
@@ -124,8 +128,8 @@ int main(int argc, char* argv[])
             if ((*iter)->blank)
               continue;
             Sprite* image = (*iter)->image;
-            image->render(((*iter)->posX * scale) - currentX,
-                          ((*iter)->posY * scale) - currentY,
+            image->render(((*iter)->posX * scale) - (currentX * scale),
+                          ((*iter)->posY * scale) - (currentY * scale),
                           image->getH() * scale,
                           image->getW() * scale);
         }
@@ -169,9 +173,16 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
 
     cout << "Loaded panel " << newPanel->name << endl;
     if (newPanel->blank)
+    {
+        newPanel->width = configNode.child("dims").attribute("width").as_int();
+        newPanel->height = configNode.child("dims").attribute("height").as_int();
         return newPanel; //There is no image to load; skip loading an image.
+    }
+
     newPanel->image->loadFromFile(configNode.child("filename").attribute("str").as_string());
     cout << "Loaded file " << configNode.child("filename").attribute("str").as_string() << endl << endl;
+    newPanel->height = newPanel->image->getH();
+    newPanel->width = newPanel->image->getW();
     return newPanel;
 }
 ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
@@ -193,4 +204,12 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
 
     cout << "Error switching panels: panel " << nextName << " does not exist." << endl;
     return nullptr; //Yeah, sorry, this panel doesn't exist.
+}
+double getScaling(ComicPanel* panel, HydraEngine* engine)
+{
+    //Figure out the scaling needed to fit this panel's largest dimension on the
+    if (abs(engine->getWXSize() - panel->width) >= abs(engine->getWYSize() - panel->height))
+        return (float)engine->getWXSize() / (float)panel->width;
+    else
+        return (float)engine->getWYSize() / (float)panel->height;
 }
