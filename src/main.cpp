@@ -33,10 +33,12 @@ int main(int argc, char* argv[])
 	engine->init();
 
     vector<ComicPanel*> panels;
-    //int currentX = 0, currentY = 0;
-    //bool transitioning = false;
-    //double scale = 1.0;
-    //ComicPanel* currentComic;
+    bool quit = false;
+
+    int currentX = 0, currentY = 0;
+    bool transitioning = false;
+    double scale = 1.0;
+    ComicPanel* currentComic;
 
     char cCurrentPath[FILENAME_MAX];
     cout << "CWD: " <<  getcwd(cCurrentPath, sizeof(cCurrentPath)) << endl;
@@ -53,17 +55,6 @@ int main(int argc, char* argv[])
         panels.push_back(newPanel);
     }
 
-    SDL_RenderClear(engine->getRenderer());
-
-    //Render panels
-    for (auto iter = panels.begin(); iter != panels.end(); iter++)
-    {
-        Sprite* image = (*iter)->image;
-        image->render((*iter)->posX, (*iter)->posY);
-    }
-    SDL_RenderPresent(engine->getRenderer());
-
-    bool quit = false;
     while (!quit)
     {
         SDL_Event e;
@@ -72,6 +63,19 @@ int main(int argc, char* argv[])
             if (e.type == SDL_QUIT)
                 quit = true;
         }
+
+        //Rendering stuff
+        SDL_RenderClear(engine->getRenderer());
+
+        for (auto iter = panels.begin(); iter != panels.end(); iter++)
+        {
+            if ((*iter)->blank)
+              continue;
+            Sprite* image = (*iter)->image;
+            image->render((*iter)->posX * scale, (*iter)->posY * scale, image->getH() * scale, image->getW() * scale);
+        }
+
+        SDL_RenderPresent(engine->getRenderer());
     }
 
     //Shutdown sequence
@@ -115,4 +119,24 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
     newPanel->image->loadFromFile(configNode.child("filename").attribute("str").as_string());
     cout << "Loaded file " << configNode.child("filename").attribute("str").as_string() << endl << endl;
     return newPanel;
+}
+ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
+{
+    //Given a name of a panel and a vector of pointers to panels, find a panel with the given name.
+    //Returns nullptr if there is no such pointer
+
+    //Dummy check - XML file should specify null if you don't want to switch to comic from a dir
+    if (nextName == "null")
+        return nullptr;
+
+    for (auto iter = panels.begin(); iter != panels.end(); iter++)
+    {
+        if ((*iter)->name == nextName)
+        {
+            cout << "Switching panels to panel " << nextName << endl;
+        }
+    }
+
+    cout << "Error switching panels: panel " << nextName << " does not exist." << endl;
+    return nullptr; //Yeah, sorry, this panel doesn't exist.
 }

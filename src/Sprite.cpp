@@ -177,14 +177,19 @@ namespace Hydra
     }
     void Sprite::render(int x, int y, int h, int w)
     {
-        scale.x = x;
-        scale.y = y;
-        if (h != -1)
-            scale.h = h;
-        if (w != -1)
-            scale.w = w;
+        SDL_Rect scaling;
+        scaling.x = x;
+        scaling.y = y;
+        if (h == -1)
+            scaling.h = scale.h;
+        else
+            scaling.h = h;
+        if (w == -1)
+            scaling.w = scale.w;
+        else
+            scaling.w = w;
 
-        SDL_RenderCopyEx(renderer, texture, &clip, &scale, angle, &center, SDL_FLIP_NONE);
+        SDL_RenderCopyEx(renderer, texture, &clip, &scaling, angle, &center, SDL_FLIP_NONE);
         return;
     }
     void Sprite::setCenterX(int newX)
