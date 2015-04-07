@@ -2,7 +2,7 @@
 	<panel name="panel00000">
 		<filename str="img/00000.png"></filename>
 		<position x="0" y="0"></position>
-		<vels velX="5" velY="5"></vels>
+		<vel value="5"></vel>
 		<root enabled="true"></root>
 		<blank enabled="false"></blank>
 		<dirs>
@@ -15,7 +15,7 @@
 	<panel name="panel00001">
 		<filename str="img/00002.png"></filename>
 		<position x="553" y="0"></position>
-		<vels velX="5" velY="5"></vels>
+		<vel value="5"></vel>		
 		<root enabled="false"></root>
 		<blank enabled="false"></blank>
 		<dirs>

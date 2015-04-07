@@ -13,10 +13,9 @@ class ComicPanel
 public:
     int posX;
     int posY;
-    float velX; //Speed when traveling TO this panel!
-    float velY;
-    bool root;
+    float vel; //Speed when traveling TO this panel!    bool root;
     bool blank; //If true, don't render this panel - it's just an empty frame.
+    bool root; //Is this comic a root?
     string nextComic[4]; //The name of the next panel to be moved to given
     string name;
     Sprite* image;
@@ -38,7 +37,7 @@ int main(int argc, char* argv[])
     int currentX = 0, currentY = 0;
     bool transitioning = false;
     double scale = 1.0;
-    ComicPanel* currentComic;
+    ComicPanel* currentPanel;
 
     char cCurrentPath[FILENAME_MAX];
     cout << "CWD: " <<  getcwd(cCurrentPath, sizeof(cCurrentPath)) << endl;
@@ -52,11 +51,17 @@ int main(int argc, char* argv[])
     for (pugi::xml_node comic = doc.child("Comics").child("panel"); comic; comic = comic.next_sibling())
     {
         ComicPanel* newPanel = loadFromXML(comic);
+        if (newPanel->root)
+            currentPanel = newPanel;
         panels.push_back(newPanel);
     }
 
-    while (!quit)
+    if (currentPanel == nullptr)
+        cout << "Error - couldn't find the root panel! Have you specified one yet?" << endl;
+
+    while (!quit && currentPanel != nullptr)
     {
+        //Does nothing overly special; it's just here for the quit command.
         SDL_Event e;
         while (SDL_PollEvent(&e) != 0)
         {
@@ -64,15 +69,65 @@ int main(int argc, char* argv[])
                 quit = true;
         }
 
+        //Transitioning stuff
+        if (!transitioning)
+        {
+            ComicPanel* nextPanel = nullptr;
+
+            const Uint8* keystate = SDL_GetKeyboardState(nullptr);
+            if (keystate[SDL_SCANCODE_DOWN])
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::down]);
+            if (keystate[SDL_SCANCODE_UP])
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::up]);
+            if (keystate[SDL_SCANCODE_LEFT])
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::left]);
+            if (keystate[SDL_SCANCODE_RIGHT])
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::right]);
+
+            if (nextPanel != nullptr)
+            {
+                currentPanel = nextPanel;
+                transitioning = true;
+                cout << "\nSwitching panels to panel " << currentPanel->name << endl;
+            }
+        }
+
+
+        //Velocities in directions - uses a Vector2D for calculations (because TRIGONOMETRY!)
+        if (transitioning)
+        {
+            Vector2D dir;
+            dir.rotate(atan2f(currentPanel->posY - currentY, currentPanel->posX - currentX));
+            dir.setMag(currentPanel->vel);
+
+            currentX += dir.getX();
+            currentY += dir.getY();
+
+            //Distanc checking - basically a cheap way of doing Pythagorean theorem, but with vectors so the math doesn't have to be written out
+            dir.setX(abs(currentPanel->posX - currentX));
+            dir.setY(abs(currentPanel->posY - currentY));
+
+            if (dir.getMag() <= currentPanel->vel) //Disabled temporarily
+            {
+                cout << "Panel within range; finishing transition. ";
+                transitioning = false;
+                currentX = currentPanel->posX;
+                currentY = currentPanel->posY;
+                cout << "Viewer at " << currentX << ", " << currentY << endl;
+            }
+        }
+
         //Rendering stuff
         SDL_RenderClear(engine->getRenderer());
-
         for (auto iter = panels.begin(); iter != panels.end(); iter++)
         {
             if ((*iter)->blank)
               continue;
             Sprite* image = (*iter)->image;
-            image->render((*iter)->posX * scale, (*iter)->posY * scale, image->getH() * scale, image->getW() * scale);
+            image->render(((*iter)->posX * scale) - currentX,
+                          ((*iter)->posY * scale) - currentY,
+                          image->getH() * scale,
+                          image->getW() * scale);
         }
 
         SDL_RenderPresent(engine->getRenderer());
@@ -98,8 +153,7 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
     newPanel->name = configNode.attribute("name").as_string();
     newPanel->posX = configNode.child("position").attribute("x").as_int();
     newPanel->posY = configNode.child("position").attribute("y").as_int();
-    newPanel->velX = configNode.child("vels").attribute("velX").as_int();
-    newPanel->velY = configNode.child("vels").attribute("velY").as_int();
+    newPanel->vel = configNode.child("vel").attribute("value").as_float();
     newPanel->root = false; //Default value
     newPanel->root = configNode.child("root").attribute("enabled").as_bool();
     newPanel->blank = false; //Default value
@@ -133,7 +187,7 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
     {
         if ((*iter)->name == nextName)
         {
-            cout << "Switching panels to panel " << nextName << endl;
+            return *iter;
         }
     }
 
