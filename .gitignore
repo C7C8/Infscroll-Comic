@@ -15,5 +15,5 @@ img/
 
 #Misc files
 sysLog.txt
-00000.png
-00002.png
+*.png
+*.bmp

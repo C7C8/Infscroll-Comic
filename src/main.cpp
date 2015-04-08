@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
 
     int currentX = 0, currentY = 0;
     double scale = 1.0f;
+    double scalingDiff = 0.0f; //How much to change by
     bool transitioning = false;
     ComicPanel* currentPanel;
 
@@ -55,7 +56,10 @@ int main(int argc, char* argv[])
     {
         ComicPanel* newPanel = loadFromXML(comic);
         if (newPanel->root)
+        {
             currentPanel = newPanel;
+            scale = getScaling(currentPanel, engine); //The comic is to start out scaled to the root panel
+        }
         panels.push_back(newPanel);
     }
 
@@ -71,8 +75,6 @@ int main(int argc, char* argv[])
             if (e.type == SDL_QUIT)
                 quit = true;
         }
-
-        scale = getScaling(currentPanel, engine);
 
         //Transitioning stuff
         if (!transitioning)
@@ -94,6 +96,13 @@ int main(int argc, char* argv[])
                 currentPanel = nextPanel;
                 transitioning = true;
                 cout << "Switching panels to panel " << currentPanel->name;
+
+                //Get the distance - used for determining the scaling rate
+                Vector2D dir;
+                dir.setX(abs((int)(scale * ((double)currentPanel->posX - currentX))));
+                dir.setY(abs((int)(scale * ((double)currentPanel->posY - currentY))));
+
+                scalingDiff = (getScaling(currentPanel, engine) - scale) / (dir.getMag() / (double)currentPanel->vel);
             }
         }
 
@@ -106,18 +115,19 @@ int main(int argc, char* argv[])
 
             currentX += dir.getX();
             currentY += dir.getY();
+            scale += scalingDiff;
 
             //Distance checking - basically a cheap way of doing Pythagorean theorem, but with vectors so the math doesn't have to be written out
             dir.setX(abs((int)(scale * ((double)currentPanel->posX - currentX))));
             dir.setY(abs((int)(scale * ((double)currentPanel->posY - currentY))));
-           // SDL_Delay(180);
 
             if (dir.getMag() <= currentPanel->vel)
             {
                 transitioning = false;
-                currentX = (double)currentPanel->posX;// * scale;
-                currentY = (double)currentPanel->posY;// * scale;
-                cout << ". Viewer at " << currentX << ", " << currentY << ". Advised scaling: " << getScaling(currentPanel, engine) << endl;
+                currentX = (double)currentPanel->posX; //Absolute magic. Complete effing magic!
+                currentY = (double)currentPanel->posY;
+                scale= getScaling(currentPanel, engine); //Fix scaling
+                cout << ". Viewer at " << currentX << ", " << currentY << ". Scale: " << getScaling(currentPanel, engine) << endl;
             }
         }
 
