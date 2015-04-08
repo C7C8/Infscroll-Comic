@@ -37,7 +37,8 @@ int main(int argc, char* argv[])
     vector<ComicPanel*> panels;
     bool quit = false;
 
-    int currentX = 0, currentY = 0;
+    double currentX = 0, currentY = 0;
+    double dX = 0, dY = 0;
     double scale = 1.0f;
     double scalingDiff = 0.0f; //How much to change by
     bool transitioning = false;
@@ -68,6 +69,10 @@ int main(int argc, char* argv[])
 
     while (!quit && currentPanel != nullptr)
     {
+        Timer fpsTimer;
+        fpsTimer.start();
+        fpsTimer.setInterval(1000.0f / 60.0f);
+
         //Does nothing overly special; it's just here for the quit command.
         SDL_Event e;
         while (SDL_PollEvent(&e) != 0)
@@ -97,12 +102,12 @@ int main(int argc, char* argv[])
                 transitioning = true;
                 cout << "Switching panels to panel " << currentPanel->name;
 
-                //Get the distance - used for determining the scaling rate
+                //Compute dX and dY values
                 Vector2D dir;
-                dir.setX(abs((int)(scale * ((double)currentPanel->posX - currentX))));
-                dir.setY(abs((int)(scale * ((double)currentPanel->posY - currentY))));
-
-                scalingDiff = (getScaling(currentPanel, engine) - scale) / (dir.getMag() / (double)currentPanel->vel);
+                dir.rotate(atan2f((double)(currentPanel->posY - currentY), (double)(currentPanel->posX - currentX)));
+                dir.setMag(currentPanel->vel);
+                dX = dir.getX();
+                dY = dir.getY();
             }
         }
 
@@ -110,16 +115,13 @@ int main(int argc, char* argv[])
         if (transitioning)
         {
             Vector2D dir;
-            dir.rotate(atan2f(scale * (double)(currentPanel->posY - currentY), scale * (double)(currentPanel->posX - currentX)));
-            dir.setMag(currentPanel->vel);
-
-            currentX += dir.getX();
-            currentY += dir.getY();
-            scale += scalingDiff;
-
-            //Distance checking - basically a cheap way of doing Pythagorean theorem, but with vectors so the math doesn't have to be written out
             dir.setX(abs((int)(scale * ((double)currentPanel->posX - currentX))));
             dir.setY(abs((int)(scale * ((double)currentPanel->posY - currentY))));
+            scalingDiff = (getScaling(currentPanel, engine) - scale) / (dir.getMag() / (double)currentPanel->vel);
+
+            scale += scalingDiff;
+            currentX += dX * scale;
+            currentY += dY * scale;
 
             if (dir.getMag() <= currentPanel->vel)
             {
@@ -138,13 +140,16 @@ int main(int argc, char* argv[])
             if ((*iter)->blank)
               continue;
             Sprite* image = (*iter)->image;
-            image->render(((*iter)->posX * scale) - (currentX * scale),
-                          ((*iter)->posY * scale) - (currentY * scale),
+            image->render(((*iter)->posX - currentX) * scale,
+                          ((*iter)->posY - currentY) * scale,
                           image->getH() * scale,
                           image->getW() * scale);
         }
 
         SDL_RenderPresent(engine->getRenderer());
+
+        //Ensures 60 fps
+        while (!fpsTimer.hasIntervalPassed());
     }
 
     //Shutdown sequence
