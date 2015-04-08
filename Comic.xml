@@ -26,8 +26,8 @@
 		</dirs>
 	</panel>
 	<panel name="panel00002">
-		<filename str="img/00003.png"></filename>
-		<position x="1206" y="0"></position>
+		<filename str="sample.bmp"></filename>
+		<position x="1206" y="256"></position>
 		<vel value="5"></vel>		
 		<root enabled="false"></root>
 		<blank enabled="false"></blank>
@@ -40,7 +40,7 @@
 	</panel>
 	<panel name="panel00003">
 		<filename str="img/00004.png"></filename>
-		<position x="1759" y="0"></position>
+		<position x="2006" y="0"></position>
 		<vel value="5"></vel>		
 		<root enabled="false"></root>
 		<blank enabled="false"></blank>
