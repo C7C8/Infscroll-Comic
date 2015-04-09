@@ -149,8 +149,8 @@ int main(int argc, char* argv[])
             scalingDiff = (getScaling(currentPanel, engine) - scale) / (dir.getMag() / (double)currentPanel->vel);
 
             scale += scalingDiff;
-            currentX += dX * scale;
-            currentY += dY * scale;
+            currentX += dX;// * scale;
+            currentY += dY;// * scale;
 
             if (dir.getMag() <= currentPanel->vel)
             {
