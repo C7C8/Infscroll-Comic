@@ -53,6 +53,8 @@ int main(int argc, char* argv[])
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file("Comic.xml");
     cout << "Loaded file Comic.xml with result: " << result.description() << endl;
+    sysLog->log("Loaded file Comic.xml with result: " + string(result.description()));
+    sysLog->log("Loading panels...", Hydra::resource);
     cout << "\nLoading panels...\n" << endl;
 
     for (pugi::xml_node comic = doc.child("Comics").child("panel"); comic; comic = comic.next_sibling())
@@ -130,6 +132,7 @@ int main(int argc, char* argv[])
                 currentPanel = nextPanel;
                 transitioning = true;
                 cout << "Switching panels to panel " << currentPanel->name;
+                sysLog->log("Switching panels to panel " + currentPanel->name);
 
                 //Compute dX and dY values
                 Vector2D dir;
@@ -159,6 +162,7 @@ int main(int argc, char* argv[])
                 currentY = (double)currentPanel->posY;
                 scale= getScaling(currentPanel, engine); //Fix scaling
                 cout << ". Viewer at " << currentX << ", " << currentY << ". Scale: " << getScaling(currentPanel, engine) << endl;
+                sysLog->log("Viewer at " + to_string(currentX) + ", " + to_string(currentY) + ". Scale: " + to_string(getScaling(currentPanel, engine)));
             }
         }
 
@@ -183,9 +187,11 @@ int main(int argc, char* argv[])
 
     //Shutdown sequence
     cout << "\nFreeing images..." << endl;
+    sysLog->log("Freeing images...", Hydra::resource);
     for (auto iter = panels.begin(); iter != panels.end(); iter++)
     {
         cout << "Freeing " << (*iter)->name << "..." << endl;
+        sysLog->log("Freeing " + (*iter)->name + "...", Hydra::resource);
         (*iter)->image->free();
         delete *iter;
     }
@@ -216,6 +222,7 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
 
 
     cout << "Loaded panel " << newPanel->name << endl;
+    sysLog->log("Loaded panel " + newPanel->name, Hydra::resource);
     if (newPanel->blank)
     {
         newPanel->width = configNode.child("dims").attribute("width").as_int();
@@ -225,6 +232,7 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
 
     newPanel->image->loadFromFile(configNode.child("filename").attribute("str").as_string());
     cout << "Loaded file " << configNode.child("filename").attribute("str").as_string() << endl << endl;
+    sysLog->log("Loaded file " + string(configNode.child("filename").attribute("str").as_string()), Hydra::resource);
     newPanel->height = newPanel->image->getH();
     newPanel->width = newPanel->image->getW();
     return newPanel;
@@ -247,6 +255,7 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
     }
 
     cout << "Error switching panels: panel " << nextName << " does not exist." << endl;
+    sysLog->log("Error switching panels: panel " + nextName + " does not exist.", Hydra::error);
     return nullptr; //Yeah, sorry, this panel doesn't exist.
 }
 double getScaling(ComicPanel* panel, HydraEngine* engine)
