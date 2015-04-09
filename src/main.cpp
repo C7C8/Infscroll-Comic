@@ -40,8 +40,10 @@ int main(int argc, char* argv[])
     double currentX = 0, currentY = 0;
     double dX = 0, dY = 0;
     double scale = 1.0f;
-    double scalingDiff = 0.0f; //How much to change by
+    double scalingDiff = 0.0f; //How much to change the scaling by
     bool transitioning = false;
+    bool fullscreen = false;
+    int fcCooldown = 0;
     ComicPanel* currentPanel;
 
     char cCurrentPath[FILENAME_MAX];
@@ -59,7 +61,10 @@ int main(int argc, char* argv[])
         if (newPanel->root)
         {
             currentPanel = newPanel;
+            cout << "Setting root panel to panel " << currentPanel->name << " at position " << currentPanel->posX << ", " << currentPanel->posY << endl;
             scale = getScaling(currentPanel, engine); //The comic is to start out scaled to the root panel
+            currentX = currentPanel->posX;
+            currentY = currentPanel->posY;
         }
         panels.push_back(newPanel);
     }
@@ -69,16 +74,40 @@ int main(int argc, char* argv[])
 
     while (!quit && currentPanel != nullptr)
     {
+        if (fcCooldown > 0)
+            fcCooldown--;
         Timer fpsTimer;
         fpsTimer.start();
         fpsTimer.setInterval(1000.0f / 60.0f);
 
-        //Does nothing overly special; it's just here for the quit command.
         SDL_Event e;
         while (SDL_PollEvent(&e) != 0)
         {
-            if (e.type == SDL_QUIT)
+            if (e.type == SDL_QUIT || e.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
                 quit = true;
+            if (e.key.keysym.scancode == SDL_SCANCODE_F && !transitioning && fcCooldown == 0)
+            {
+                if (!fullscreen)
+                {
+                    fullscreen = true;
+                    engine->setWSize(1366, 768);
+                    SDL_SetWindowFullscreen(engine->getWindow(), SDL_WINDOW_FULLSCREEN);
+                }
+                else
+                {
+                    fullscreen = false;
+                    SDL_SetWindowFullscreen(engine->getWindow(), 0);
+                    engine->setWSize(800, 600);
+                }
+
+                scale = getScaling(currentPanel, engine);
+
+                cout << "Fullscreen: " << fullscreen << ". Window dimensions: " << engine->getWXSize() << "x" <<
+                    engine->getWYSize() << ". Scaling: " << scale << endl;
+                fcCooldown = 30;
+
+
+            }
         }
 
         //Transitioning stuff
@@ -222,9 +251,11 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
 }
 double getScaling(ComicPanel* panel, HydraEngine* engine)
 {
-    //Figure out the scaling needed to fit this panel's largest dimension on the
-    if (abs(engine->getWXSize() - panel->width) >= abs(engine->getWYSize() - panel->height))
-        return (float)engine->getWXSize() / (float)panel->width;
+    //Figure out the scaling needed to fit this panel's largest dimension on the screen
+    if (panel->width > panel->height)
+        return (double)engine->getWXSize() / (double)panel->width;
     else
-        return (float)engine->getWYSize() / (float)panel->height;
+        return (double)engine->getWYSize() / (double)panel->height;
+
+    return 1.0f;
 }
