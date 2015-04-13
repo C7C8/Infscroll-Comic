@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     bool transitioning = false;
     bool fullscreen = false;
     int fcCooldown = 0;
-    ComicPanel* currentPanel;
+    ComicPanel* currentPanel = nullptr;
 
     char cCurrentPath[FILENAME_MAX];
     cout << "CWD: " <<  getcwd(cCurrentPath, sizeof(cCurrentPath)) << endl;
@@ -301,6 +301,9 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName, ComicPane
 double getScaling(ComicPanel* panel, HydraEngine* engine)
 {
     //Figure out the scaling needed to fit this panel's largest dimension on the screen
+    if (panel == nullptr || engine == nullptr)
+        return 1.0f; //Can't do anything with a bunch of nulls, can I?
+
     double zWidth = (double)engine->getWXSize() / (double)panel->width;
     double zHeight = (double)engine->getWYSize() / (double)panel->height;
 

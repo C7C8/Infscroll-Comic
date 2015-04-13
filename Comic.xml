@@ -8,8 +8,8 @@
 		<dirs>
 			<up nextComic="null"></up>
 			<down nextComic="null"></down>
-			<left nextComic="null"></left>
-			<right nextComic="panel00001"></right>
+			<left nextComic="panel00001"></left>
+			<right nextComic="null"></right>
 		</dirs>
 	</panel>
 	<panel name="panel00001" autopos="true">
