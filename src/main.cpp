@@ -261,10 +261,11 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
 double getScaling(ComicPanel* panel, HydraEngine* engine)
 {
     //Figure out the scaling needed to fit this panel's largest dimension on the screen
-    if (panel->width > panel->height)
-        return (double)engine->getWXSize() / (double)panel->width;
-    else
-        return (double)engine->getWYSize() / (double)panel->height;
+    double zWidth = (double)engine->getWXSize() / (double)panel->width;
+    double zHeight = (double)engine->getWYSize() / (double)panel->height;
 
-    return 1.0f;
+    if (zWidth < zHeight)
+        return zWidth;
+    else
+        return zHeight;
 }
