@@ -8,8 +8,8 @@
 		<dirs>
 			<up nextComic="null"></up>
 			<down nextComic="null"></down>
-			<left nextComic="panel00001"></left>
-			<right nextComic="null"></right>
+			<left nextComic="null"></left>
+			<right nextComic="panel00001"></right>
 		</dirs>
 	</panel>
 	<panel name="panel00001" autopos="true">
@@ -38,7 +38,7 @@
 			<right nextComic="panel00003"></right>
 		</dirs>
 	</panel>
-	<panel name="panel00003">
+	<panel name="panel00003" autopos="true">
 		<filename str="img/00004.png"></filename>
 		<position x="2006" y="0"></position>
 		<vel value="5"></vel>		

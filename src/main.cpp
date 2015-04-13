@@ -11,6 +11,7 @@ enum dirs {left, right, up, down};
 class ComicPanel
 {
 public:
+    ComicPanel();
     int posX;
     int posY;
     int height;
@@ -19,13 +20,16 @@ public:
     bool blank; //If true, don't render this panel - it's just an empty frame.
     bool root; //Is this comic a root?
     bool autopos; //If true, this comic's position will be determined dynamically
+    bool autoprocessed; //If true, this comic has already been processed by the recursive positioning algorithm.
     string nextComic[4]; //The name of the next panel to be moved to given
     string name;
     Sprite* image;
 };
 
 ComicPanel* loadFromXML(pugi::xml_node configNode);
-ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName, ComicPanel* lastPanel, dirs dir);
+ComicPanel* switchToComic(vector<ComicPanel*>* panels, string nextName);
+void performAutoPos(ComicPanel* lastPanel, ComicPanel* nextPanel, dirs dir);
+void recursivePositioning(ComicPanel* panel, vector<ComicPanel*>* panels);
 inline double getScaling(ComicPanel* panel, HydraEngine* engine);
 
 Log* sysLog = Logger::getInstance()->getLog("sysLog");
@@ -75,6 +79,10 @@ int main(int argc, char* argv[])
     if (currentPanel == nullptr)
         cout << "Error - couldn't find the root panel! Have you specified one yet?" << endl;
 
+    //Try to recursively solve the panel positions
+    for (auto iter = panels.begin(); iter != panels.end(); iter++)
+        recursivePositioning(*iter, &panels);
+
     while (!quit && currentPanel != nullptr)
     {
         if (fcCooldown > 0)
@@ -108,8 +116,6 @@ int main(int argc, char* argv[])
                 cout << "Fullscreen: " << fullscreen << ". Window dimensions: " << engine->getWXSize() << "x" <<
                     engine->getWYSize() << ". Scaling: " << scale << endl;
                 fcCooldown = 30;
-
-
             }
         }
 
@@ -120,13 +126,13 @@ int main(int argc, char* argv[])
 
             const Uint8* keystate = SDL_GetKeyboardState(nullptr);
             if (keystate[SDL_SCANCODE_DOWN])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::down], currentPanel, dirs::down);
+                nextPanel = switchToComic(&panels, currentPanel->nextComic[dirs::down]);
             if (keystate[SDL_SCANCODE_UP])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::up], currentPanel, dirs::up);
+                nextPanel = switchToComic(&panels, currentPanel->nextComic[dirs::up]);
             if (keystate[SDL_SCANCODE_LEFT])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::left], currentPanel, dirs::left);
+                nextPanel = switchToComic(&panels, currentPanel->nextComic[dirs::left]);
             if (keystate[SDL_SCANCODE_RIGHT])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::right], currentPanel, dirs::right);
+                nextPanel = switchToComic(&panels, currentPanel->nextComic[dirs::right]);
 
             if (nextPanel != nullptr)
             {
@@ -198,7 +204,10 @@ int main(int argc, char* argv[])
     }
     engine->shutdown();
 }
-
+ComicPanel::ComicPanel()
+{
+    autoprocessed = false;
+}
 ComicPanel* loadFromXML(pugi::xml_node configNode)
 {
     //Assumes that this node is a "panel" node.
@@ -242,7 +251,7 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
     newPanel->width = newPanel->image->getW();
     return newPanel;
 }
-ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName, ComicPanel* lastPanel, dirs dir)
+ComicPanel* switchToComic(vector<ComicPanel*>* panels, string nextName)
 {
     //Given a name of a panel and a vector of pointers to panels, find a panel with the given name.
     //Returns nullptr if there is no such pointer
@@ -251,52 +260,62 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName, ComicPane
     if (nextName == "null")
         return nullptr;
 
-    ComicPanel* nextPanel = nullptr;
-
-    for (auto iter = panels.begin(); iter != panels.end(); iter++)
-    {
+    for (auto iter = panels->begin(); iter != panels->end(); iter++)
         if ((*iter)->name == nextName)
-        {
-            nextPanel = *iter;
-            break;
-        }
-    }
-
-    if (nextPanel != nullptr && nextPanel->autopos)
+            return *iter;
+    return nullptr;
+}
+void performAutoPos(ComicPanel* lastPanel, ComicPanel* nextPanel, dirs dir)
+{
+    //Figure out this thing's position using the position of the last panel
+    if (dir == dirs::up)
     {
-        cout << "Running autopos on panel " << nextPanel->name << " using panel " << lastPanel->name << " as reference." << endl;
-        sysLog->log("Running autopos on panel " + nextPanel->name + " using panel " + lastPanel->name + " as reference.");
-
-        //Figure out this thing's position using the position of the last panel
-        if (dir == dirs::up)
-        {
-            nextPanel->posX = lastPanel->posX;
-            nextPanel->posY = lastPanel->posY - nextPanel->height;
-        }
-        if (dir == dirs::down)
-        {
-            nextPanel->posX = lastPanel->posX;
-            nextPanel->posY = lastPanel->posY + lastPanel->height;
-        }
-        if (dir == dirs::left)
-        {
-            nextPanel->posX = lastPanel->posX - nextPanel->width;
-            nextPanel->posY = lastPanel->posY;
-        }
-        if (dir == dirs::right)
-        {
-            nextPanel->posX = lastPanel->posX + lastPanel->width;
-            nextPanel->posY = lastPanel->posY;
-        }
-
-        cout << "New coordinates: " << nextPanel->posX << ", " << nextPanel->posY << endl;
-
-        nextPanel->blank = false;
-        nextPanel->autopos = false;
-        return nextPanel;
+        nextPanel->posX = lastPanel->posX;
+        nextPanel->posY = lastPanel->posY - nextPanel->height;
     }
-    else
-        return nextPanel;
+    if (dir == dirs::down)
+    {
+        nextPanel->posX = lastPanel->posX;
+        nextPanel->posY = lastPanel->posY + lastPanel->height;
+    }
+    if (dir == dirs::left)
+    {
+        nextPanel->posX = lastPanel->posX - nextPanel->width;
+        nextPanel->posY = lastPanel->posY;
+    }
+    if (dir == dirs::right)
+    {
+        nextPanel->posX = lastPanel->posX + lastPanel->width;
+        nextPanel->posY = lastPanel->posY;
+    }
+
+    nextPanel->autopos = false;
+    nextPanel->blank = false;
+}
+void recursivePositioning(ComicPanel* panel, vector<ComicPanel*>* panels)
+{
+    if (panel == nullptr || panels == nullptr || panel->autopos || panel->autoprocessed)
+        return;
+
+    //Accepts a single panel to begin recursive operations on.
+    for (int i = 0; i < 4; ++i)
+    {
+        ComicPanel* nextPanel = switchToComic(panels, panel->nextComic[i]);
+        if (nextPanel == nullptr)
+            continue;
+
+
+        if (nextPanel->autopos)
+        {
+            performAutoPos(panel, nextPanel, (dirs)i);
+            cout << "Positioned panel " << nextPanel->name << " at " << nextPanel->posX << ", " << nextPanel->posY << " using panel " << panel->name << " as reference." << endl;
+        }
+
+        cout << "Attempting to perform recursive positioning on panel " << nextPanel->name << endl;
+        sysLog->log("Attempting to perform recursive positioning on panel " + nextPanel->name);
+        panel->autoprocessed = true;
+        recursivePositioning(nextPanel, panels);
+    }
 }
 double getScaling(ComicPanel* panel, HydraEngine* engine)
 {
