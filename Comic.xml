@@ -12,7 +12,7 @@
 			<right nextComic="panel00001"></right>
 		</dirs>
 	</panel>
-	<panel name="panel00001">
+	<panel name="panel00001" autopos="true">
 		<filename str="img/00002.png"></filename>
 		<position x="553" y="50"></position>
 		<vel value="5"></vel>		

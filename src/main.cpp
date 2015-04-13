@@ -18,13 +18,14 @@ public:
     float vel; //Speed when traveling TO this panel!    bool root;
     bool blank; //If true, don't render this panel - it's just an empty frame.
     bool root; //Is this comic a root?
+    bool autopos; //If true, this comic's position will be determined dynamically
     string nextComic[4]; //The name of the next panel to be moved to given
     string name;
     Sprite* image;
 };
 
 ComicPanel* loadFromXML(pugi::xml_node configNode);
-ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName);
+ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName, ComicPanel* lastPanel, dirs dir);
 inline double getScaling(ComicPanel* panel, HydraEngine* engine);
 
 Log* sysLog = Logger::getInstance()->getLog("sysLog");
@@ -119,13 +120,13 @@ int main(int argc, char* argv[])
 
             const Uint8* keystate = SDL_GetKeyboardState(nullptr);
             if (keystate[SDL_SCANCODE_DOWN])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::down]);
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::down], currentPanel, dirs::down);
             if (keystate[SDL_SCANCODE_UP])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::up]);
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::up], currentPanel, dirs::up);
             if (keystate[SDL_SCANCODE_LEFT])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::left]);
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::left], currentPanel, dirs::left);
             if (keystate[SDL_SCANCODE_RIGHT])
-                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::right]);
+                nextPanel = switchToComic(panels, currentPanel->nextComic[dirs::right], currentPanel, dirs::right);
 
             if (nextPanel != nullptr)
             {
@@ -212,6 +213,10 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
     newPanel->root = configNode.child("root").attribute("enabled").as_bool();
     newPanel->blank = false; //Default value
     newPanel->blank = configNode.child("blank").attribute("enabled").as_bool();
+    newPanel->autopos = false;
+    newPanel->autopos = configNode.attribute("autopos").as_bool();
+    if (newPanel->autopos)
+        newPanel->blank = true; //Don't render until this thing can be positioned.
     for (int i = 0; i < 4; i++)
         newPanel->nextComic[i] = "null"; //Signifies that there is no transition to a new comic. These are default values.
 
@@ -223,7 +228,7 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
 
     cout << "Loaded panel " << newPanel->name << endl;
     sysLog->log("Loaded panel " + newPanel->name, Hydra::resource);
-    if (newPanel->blank)
+    if (newPanel->blank && !newPanel->autopos)
     {
         newPanel->width = configNode.child("dims").attribute("width").as_int();
         newPanel->height = configNode.child("dims").attribute("height").as_int();
@@ -237,7 +242,7 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
     newPanel->width = newPanel->image->getW();
     return newPanel;
 }
-ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
+ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName, ComicPanel* lastPanel, dirs dir)
 {
     //Given a name of a panel and a vector of pointers to panels, find a panel with the given name.
     //Returns nullptr if there is no such pointer
@@ -246,17 +251,52 @@ ComicPanel* switchToComic(vector<ComicPanel*> panels, string nextName)
     if (nextName == "null")
         return nullptr;
 
+    ComicPanel* nextPanel = nullptr;
+
     for (auto iter = panels.begin(); iter != panels.end(); iter++)
     {
         if ((*iter)->name == nextName)
         {
-            return *iter;
+            nextPanel = *iter;
+            break;
         }
     }
 
-    cout << "Error switching panels: panel " << nextName << " does not exist." << endl;
-    sysLog->log("Error switching panels: panel " + nextName + " does not exist.", Hydra::error);
-    return nullptr; //Yeah, sorry, this panel doesn't exist.
+    if (nextPanel != nullptr && nextPanel->autopos)
+    {
+        cout << "Running autopos on panel " << nextPanel->name << " using panel " << lastPanel->name << " as reference." << endl;
+        sysLog->log("Running autopos on panel " + nextPanel->name + " using panel " + lastPanel->name + " as reference.");
+
+        //Figure out this thing's position using the position of the last panel
+        if (dir == dirs::up)
+        {
+            nextPanel->posX = lastPanel->posX;
+            nextPanel->posY = lastPanel->posY - nextPanel->height;
+        }
+        if (dir == dirs::down)
+        {
+            nextPanel->posX = lastPanel->posX;
+            nextPanel->posY = lastPanel->posY + lastPanel->height;
+        }
+        if (dir == dirs::left)
+        {
+            nextPanel->posX = lastPanel->posX - nextPanel->width;
+            nextPanel->posY = lastPanel->posY;
+        }
+        if (dir == dirs::right)
+        {
+            nextPanel->posX = lastPanel->posX + lastPanel->width;
+            nextPanel->posY = lastPanel->posY;
+        }
+
+        cout << "New coordinates: " << nextPanel->posX << ", " << nextPanel->posY << endl;
+
+        nextPanel->blank = false;
+        nextPanel->autopos = false;
+        return nextPanel;
+    }
+    else
+        return nextPanel;
 }
 double getScaling(ComicPanel* panel, HydraEngine* engine)
 {
