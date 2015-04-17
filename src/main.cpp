@@ -74,6 +74,8 @@ int main(int argc, char* argv[])
             currentX = currentPanel->posX;
             currentY = currentPanel->posY;
         }
+        if (newPanel->name == "rickastley")
+            engine->setWTitle(engine->getVNumber() + " - This comic is Astley-enabled!");
         panels.push_back(newPanel);
     }
 
@@ -102,7 +104,9 @@ int main(int argc, char* argv[])
                 if (!fullscreen)
                 {
                     fullscreen = true;
-                    engine->setWSize(1366, 768);
+                    SDL_DisplayMode vmode;
+                    SDL_GetCurrentDisplayMode(0, &vmode);
+                    engine->setWSize(vmode.w, vmode.h);
                     SDL_SetWindowFullscreen(engine->getWindow(), SDL_WINDOW_FULLSCREEN);
                 }
                 else
