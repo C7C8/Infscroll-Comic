@@ -38,6 +38,7 @@ int main(int argc, char* argv[])
 {
 	HydraEngine* engine = HydraEngine::getInstance();
 	engine->init();
+	srand(time(0));
 
     vector<ComicPanel*> panels;
     bool quit = false;
@@ -180,6 +181,21 @@ int main(int argc, char* argv[])
             if ((*iter)->blank)
               continue;
             Sprite* image = (*iter)->image;
+            if ((*iter)->name == "rickastley")
+            {
+                switch (rand() % 3)
+                {
+                    case 0:
+                        image->setR(rand() % 256);
+                        break;
+                    case 1:
+                        image->setG(rand() % 256);
+                        break;
+                    case 2:
+                        image->setB(rand() % 256);
+                        break;
+                }
+            }
             image->render(((*iter)->posX - currentX) * scale,
                           ((*iter)->posY - currentY) * scale,
                           image->getH() * scale,
