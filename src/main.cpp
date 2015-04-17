@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
             currentY = currentPanel->posY;
         }
         if (newPanel->name == "rickastley")
-            engine->setWTitle(engine->getVNumber() + " - This comic is Astley-enabled!");
+            engine->setWTitle("Hydra Engine " + engine->getVNumber() + " - This comic is Astley-enabled!");
         panels.push_back(newPanel);
     }
 
