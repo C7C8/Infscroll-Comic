@@ -57,8 +57,8 @@ Word are not advised.
 
 First, add the following to the Comic.xml file:
 
-<Comics>
-</Comics>
+    <Comics>
+    </Comics>
 
 Everything from here on out will be put BETWEEN these. Next comes the
 process of creating each individual panel. Here's a general template for
