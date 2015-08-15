@@ -38,6 +38,7 @@ int main(int argc, char* argv[])
 {
 	HydraEngine* engine = HydraEngine::getInstance();
 	engine->init();
+	engine->setWTitle("InfScroll-Comic");
 	srand(time(0));
 
     vector<ComicPanel*> panels;
@@ -52,16 +53,12 @@ int main(int argc, char* argv[])
     int fcCooldown = 0;
     ComicPanel* currentPanel = nullptr;
 
-    char cCurrentPath[FILENAME_MAX];
-    cout << "CWD: " <<  getcwd(cCurrentPath, sizeof(cCurrentPath)) << endl;
-
     //Load all comics
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file("Comic.xml");
-    cout << "Loaded file Comic.xml with result: " << result.description() << endl;
+
     sysLog->log("Loaded file Comic.xml with result: " + string(result.description()));
     sysLog->log("Loading panels...", Hydra::resource);
-    cout << "\nLoading panels...\n" << endl;
 
     for (pugi::xml_node comic = doc.child("Comics").child("panel"); comic; comic = comic.next_sibling())
     {
@@ -69,18 +66,17 @@ int main(int argc, char* argv[])
         if (newPanel->root)
         {
             currentPanel = newPanel;
-            cout << "Setting root panel to panel " << currentPanel->name << " at position " << currentPanel->posX << ", " << currentPanel->posY << endl;
             scale = getScaling(currentPanel, engine); //The comic is to start out scaled to the root panel
             currentX = currentPanel->posX;
             currentY = currentPanel->posY;
         }
         if (newPanel->name == "rickastley")
-            engine->setWTitle("Hydra Engine " + engine->getVNumber() + " - This comic is Astley-enabled!");
+            engine->setWTitle("InfScroll-Comic " + engine->getVNumber() + " - This comic is Astley-enabled!");
         panels.push_back(newPanel);
     }
 
     if (currentPanel == nullptr)
-        cout << "Error - couldn't find the root panel! Have you specified one yet?" << endl;
+        sysLog->log("Error - couldn't find the root panel! Have you specified one yet?", Hydra::error);
 
     //Try to recursively solve the panel positions
     for (auto iter = panels.begin(); iter != panels.end(); iter++)
@@ -117,9 +113,6 @@ int main(int argc, char* argv[])
                 }
 
                 scale = getScaling(currentPanel, engine);
-
-                cout << "Fullscreen: " << fullscreen << ". Window dimensions: " << engine->getWXSize() << "x" <<
-                    engine->getWYSize() << ". Scaling: " << scale << endl;
                 fcCooldown = 30;
             }
         }
@@ -143,7 +136,6 @@ int main(int argc, char* argv[])
             {
                 currentPanel = nextPanel;
                 transitioning = true;
-                cout << "Switching panels to panel " << currentPanel->name;
                 sysLog->log("Switching panels to panel " + currentPanel->name);
 
                 //Compute dX and dY values
@@ -173,7 +165,7 @@ int main(int argc, char* argv[])
                 currentX = (double)currentPanel->posX; //Absolute magic. Complete effing magic!
                 currentY = (double)currentPanel->posY;
                 scale= getScaling(currentPanel, engine); //Fix scaling
-                cout << ". Viewer at " << currentX << ", " << currentY << ". Scale: " << getScaling(currentPanel, engine) << endl;
+
                 sysLog->log("Viewer at " + to_string(currentX) + ", " + to_string(currentY) + ". Scale: " + to_string(getScaling(currentPanel, engine)));
             }
         }
@@ -208,16 +200,14 @@ int main(int argc, char* argv[])
 
         SDL_RenderPresent(engine->getRenderer());
 
-        //Ensures 60 fps
+        //Ensures 60 fps cap
         while (!fpsTimer.hasIntervalPassed());
     }
 
     //Shutdown sequence
-    cout << "\nFreeing images..." << endl;
     sysLog->log("Freeing images...", Hydra::resource);
     for (auto iter = panels.begin(); iter != panels.end(); iter++)
     {
-        cout << "Freeing " << (*iter)->name << "..." << endl;
         sysLog->log("Freeing " + (*iter)->name + "...", Hydra::resource);
         (*iter)->image->free();
         delete *iter;
@@ -254,8 +244,6 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
     newPanel->nextComic[dirs::left] =     configNode.child("dirs").child("left").attribute("nextComic").as_string();
     newPanel->nextComic[dirs::right] =    configNode.child("dirs").child("right").attribute("nextComic").as_string();
 
-
-    cout << "Loaded panel " << newPanel->name << endl;
     sysLog->log("Loaded panel " + newPanel->name, Hydra::resource);
     if (newPanel->blank && !newPanel->autopos)
     {
@@ -265,7 +253,6 @@ ComicPanel* loadFromXML(pugi::xml_node configNode)
     }
 
     newPanel->image->loadFromFile(configNode.child("filename").attribute("str").as_string());
-    cout << "Loaded file " << configNode.child("filename").attribute("str").as_string() << endl << endl;
     sysLog->log("Loaded file " + string(configNode.child("filename").attribute("str").as_string()), Hydra::resource);
     newPanel->height = newPanel->image->getH();
     newPanel->width = newPanel->image->getW();
@@ -326,12 +313,8 @@ void recursivePositioning(ComicPanel* panel, vector<ComicPanel*>* panels)
 
 
         if (nextPanel->autopos)
-        {
             performAutoPos(panel, nextPanel, (dirs)i);
-            cout << "Positioned panel " << nextPanel->name << " at " << nextPanel->posX << ", " << nextPanel->posY << " using panel " << panel->name << " as reference." << endl;
-        }
 
-        cout << "Attempting to perform recursive positioning on panel " << nextPanel->name << endl;
         sysLog->log("Attempting to perform recursive positioning on panel " + nextPanel->name);
         panel->autoprocessed = true;
         recursivePositioning(nextPanel, panels);
