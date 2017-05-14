@@ -14,7 +14,7 @@
 Amazing ASCII art courtesy of http://patorjk.com/software/taag/
 (as if I could make something like this on my own!)
 
-##About
+## About
 Infscroll-Comic is a lightweight graphics application that allows for
 multiple panels to be stiched together in any way that the comic
 author chooses. The reader can then navigate through the panels using
@@ -23,7 +23,7 @@ to transition to another panel, Inf-scroll-Comic will automatically
 transition to the designated panel while automatically handeling for
 zoom.
 
-##Instructions
+## Instructions
 Place the Infscroll-Comic executable in the comic resource directory.
 Comic resources typically include a file titled "Comic.xml" and a
 a series of images (individual panels), which may or may not be in
@@ -42,7 +42,7 @@ can make comics that loop, go back and forth, zoom to incredible levels,
 or are just a straight line. There's also a (very) experimental
 fullscreen feature that can be toggled by pressing 'F'. 
 
-##Making your own comic
+## Making your own comic
 Making your own comic is as easy as writing to a regular text document.
 This guide assumes you already have all the panels for your comic
 drawn, that you know how you want panels arranged, and that you have
@@ -148,7 +148,7 @@ complete comic in any arrangement of your choosing. For a working exampleof
 this, see the example Comic.xml file in either of the Infscroll-Comic zip
 files.
 
-###How to Make a Frame:
+### How to Make a Frame:
 What if you want to view multiple panels at once? Sure, you could lump them
 into one image, but what if you wanted special behavior that goes beyond
 that? A frame is just an empty panel, a spot for the viewer to transition
@@ -171,7 +171,7 @@ Dont' be afraid to set the size to values way larger than any panel on the
 screen - Infscroll-Comic will automatically scale everything on the screen
 to compensate.
 
-##Technical Stuff
+## Technical Stuff
 Infscroll_Comic is written in C++ and uses the SDL2 library for graphics
 and input. The code should be cross-platform, but you may need to
 change some #includes depending on your IDE's configuration, or
